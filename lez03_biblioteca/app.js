@@ -83,10 +83,12 @@ app.get('/libri/:id', (req, res) => {
 
 app.post('/libri', (req, res) => {
     const nuovoLibro = req.body;
-    if(!nuovoLibro.titolo.trim() || !nuovoLibro.autore.trim()) {  //Check di validità dei dati
-        res.status(400).json({ message: 'Titolo e autore sono obbligatori' });
+    if( (req.body.titolo && req.body.titolo.trim() == "") || 
+        (req.body.autore && req.body.autore.trim() == "") ){
+        res.status(400).json({"message": "Errore, necessari titolo e autore"});
         return;
     }
+
 
     nuovoLibro.id = lastId + 1;
     libri.push(nuovoLibro);
@@ -115,7 +117,8 @@ app.delete("/libri/:id", (req, res) => {
 app.put("/libri/:id", (req, res) => {
     const valId = req.params.id;
 
-    if(!req.body.titolo.trim() || !req.body.autore.trim()){
+    if( (req.body.titolo && req.body.titolo.trim() == "") || 
+        (req.body.autore && req.body.autore.trim() == "") ){
         res.status(400).json({"message": "Errore, necessari titolo e autore"});
         return;
     }
@@ -133,6 +136,17 @@ app.put("/libri/:id", (req, res) => {
     res.status(404).json({message: "Non trovato"});
 })
 
-// Update
 // Ricerca libri per autore
+// GET -> htto.../libri?ricerca=J.R.R. Tolkien
+app.get("/libri/ric/autore", (req, res) => {
+    const ricerca = req.query.ricerca;
 
+    let libriTrovati = [];
+
+    for(let i = 0; i<libri.length; i++) {
+        if(libri[i].autore == ricerca)
+            libriTrovati.push(libri[i])
+    }
+
+    res.json(libriTrovati);
+});
