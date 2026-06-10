@@ -104,6 +104,8 @@ app.post("/api/missions", (req, res) => {
         
     nuovaMissione.id = lastId + 1
 
+    lastId++
+
     missions.push(nuovaMissione)
     res.status(201).json(nuovaMissione)
 })
