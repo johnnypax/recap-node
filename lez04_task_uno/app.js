@@ -34,7 +34,7 @@ let missions = [
         category: "Networking",
         difficulty: "MEDIUM",
         estimatedMinutes: 90,
-        status: "ACTIVE",
+        status: "DRAFT",
         score: 4,
         requiredTools: ['PC', 'Switch', 'Cavi Ethernet'],
         solution: "Assegnare gli IP ai dispositivi, verificare la connettività con ping e controllare la tabella ARP.",
@@ -83,29 +83,104 @@ app.get("/api/missions", (req, res) => {
 app.get("/api/missions/:id", (req, res) => {
     const varId = req.params.id
 
-    for(let i=0; i<missions.length; i++){
-        if(missions[i].id == varId){
+    for (let i = 0; i < missions.length; i++) {
+        if (missions[i].id == varId) {
             res.json(missions[i])
             return
         }
     }
 
-    res.status(404).json({message: "Missione non trovata!"})
+    res.status(404).json({ message: "Missione non trovata!" })
 })
 
 app.post("/api/missions", (req, res) => {
     let nuovaMissione = req.body;
 
-    if(!nuovaMissione.title || nuovaMissione.title.trim() == "" || 
-        !nuovaMissione.description || nuovaMissione.description.trim() == ""){
-            res.status(400).json({message: "Problema con la richiesta"})
-            return
-        }
-        
-    nuovaMissione.id = lastId + 1
+    if (!nuovaMissione.title || nuovaMissione.title.trim() == "" ||
+        !nuovaMissione.description || nuovaMissione.description.trim() == "") {
+        res.status(400).json({ message: "Problema con la richiesta" })
+        return
+    }
 
-    lastId++
+    nuovaMissione.id = lastId + 1
+    nuovaMissione.createdAt = Date.now()
 
     missions.push(nuovaMissione)
+
+    lastId++
     res.status(201).json(nuovaMissione)
+})
+
+app.delete("/api/missions/:id", (req, res) => {
+    if (req.params.id.trim() == "") {
+        res.status(400).json({ message: "Attenzioooooone, campo obbligatorio" })
+        return
+    }
+
+    const varId = parseInt(req.params.id)
+
+    for (let i = 0; i < missions.length; i++) {
+        if (missions[i].id === varId) {
+            missions.splice(i, 1)
+            res.status(200).json({ message: "Stappoooooo" })
+            return
+        }
+    }
+
+    res.status(404).json({ message: "Errore, non trovato" })
+})
+
+app.put("/api/missions/:id", (req, res) => {
+    const varId = req.params.id
+    const oggettoModificato = req.body;
+
+    if (!oggettoModificato.title || oggettoModificato.title.trim() == "" ||
+        !oggettoModificato.description || oggettoModificato.description.trim() == "") {
+        res.status(400).json({ message: "Problema con la richiesta" })
+        return
+    }
+
+    for (let i = 0; i < missions.length; i++) {
+        if (missions[i].id === varId) {
+            missions[i].title = oggettoModificato.title ? oggettoModificato.title : missions[i].title
+            missions[i].description = oggettoModificato.description ? oggettoModificato.description : missions[i].description
+            missions[i].category = oggettoModificato.category ? oggettoModificato.category : missions[i].category
+            missions[i].difficulty = oggettoModificato.difficulty ? oggettoModificato.difficulty : missions[i].difficulty
+            missions[i].estimatedMinutes = oggettoModificato.estimatedMinutes ? oggettoModificato.estimatedMinutes : missions[i].estimatedMinutes
+            missions[i].status = oggettoModificato.status ? oggettoModificato.status : missions[i].status
+            missions[i].score = oggettoModificato.score ? oggettoModificato.score : missions[i].score
+            missions[i].requiredTools = oggettoModificato.requiredTools ? oggettoModificato.requiredTools : missions[i].requiredTools
+            missions[i].solution = oggettoModificato.solution ? oggettoModificato.solution : missions[i].solution
+            missions[i].updatedAt = Date.now()
+        }
+    }
+})
+
+app.patch("/api/missions/:id/activate", (req, res) => {
+    if (req.params.id.trim() == "") {
+        res.status(400).json({ message: "Attenzioooooone, campo obbligatorio" })
+        return
+    }
+
+    const varId = parseInt(req.params.id)
+
+    for (let i = 0; i < missions.length; i++) {
+        if (missions[i].id === varId) {
+            
+            if(missions[i].status == "DRAFT"){
+                missions[i].status = "ACTIVE"
+                missions[i].updatedAt = Date.now()
+
+                res.status(200).json({ message: "Stappoooooo" })
+                return
+            }
+            else{
+                res.status(400).json({ message: "Attenzioooooone, non in DRAFT" })
+                return
+            }
+
+        }
+    }
+
+    res.status(404).json({ message: "Errore, non trovato" })
 })
