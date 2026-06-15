@@ -35,6 +35,15 @@ let statusTypes = {
     ARCHIVED: "ARCHIVED"
 }
 
+let statusBookingTypes = {
+    PLANNED: "PLANNED",
+    CONFIRMED: "CONFIRMED",
+    CANCELLED: "CANCELLED",
+    IN_PROGRESS: "IN_PROGRESS",
+    COMPLETED: "COMPLETED",
+    NO_SHOW: "NO_SHOW",
+}
+
 let fitnetRooms = [
     {
         id: 1,
@@ -42,7 +51,7 @@ let fitnetRooms = [
         description: "Prova",
         zone: zoneTypes.FIRST_FLOOR,
         type: typeTypes.DANCE_ROOM,
-        status: statusTypes.UNAVAILABLE,
+        status: statusTypes.ARCHIVED,
         capacity: 8,
         hourlyCost: 12.5,
         hasAudioSystem: true,
@@ -50,6 +59,27 @@ let fitnetRooms = [
         createdAt: new Date("2026-01-01"),
         updatedAt: null,
         archivedAt: null
+    }
+]
+
+let classBookings = [
+    {
+        id: 1,
+        fitnessRoomId: 1,
+        className: "Avanzato primo",
+        instructorName: "Giovanni Pace",
+        instructorEmail: "prova@prova.com",
+        startTime: "11:00", //Riutilizzo lo stesso elemento per tutte le settimane
+        endTime: "12:00",
+        status: statusBookingTypes.CONFIRMED,
+        participants: 50,
+        totalCost: 200,
+        notes: "",
+        createdAt: Date.now(),
+        updatedAt: null,
+        cancelledAt: null,
+        startedAt: null,
+        completedAt: null,
     }
 ]
 
@@ -76,4 +106,30 @@ app.post("/api/fitness-rooms",  (req, res) => {
     lastId++
     
     res.status(201).json(newFitness)
+})
+
+app.patch("/api/fitness-rooms/:id/available", (req, res) => {
+
+    if(!req.params.id || req.params.id.trim() == "")
+        return res.status(400).json({message: "Errore di validazione"})
+
+    let varId = parseInt(req.params.id);
+    for(let i=0; i<fitnetRooms.length; i++){
+        if(fitnetRooms[i].id === varId){
+            
+            if(fitnetRooms[i].status === statusTypes.UNAVAILABLE || fitnetRooms[i].status === statusTypes.MAINTENANCE)
+            {
+                fitnetRooms[i].status = statusTypes.AVAILABLE
+                fitnetRooms[i].updatedAt = Date.now()
+                return res.json({message: "Aggiornato"})
+            }
+            else{
+               return res.status(400).json({message: "Errore: Non modificabile"}) 
+            }
+
+        }
+    }
+
+    return res.status(404).json({message: "Errore: Non trovato"})
+
 })
