@@ -99,7 +99,7 @@ app.get("/api/reservation", (req, res) => {
 
 //5
 app.get("/api/reservation/:id", (req, res) => {
-    if(!req.params.id || req.params.id.trim() == "" || typeof req.params.id !== 'number'){
+    if(!req.params.id || req.params.id.trim() == "" || typeof parseInt(req.params.id) !== 'number'){
         res.status(400).json({message: "Errore richiesta"})
         return;
     }
